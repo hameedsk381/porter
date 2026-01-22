@@ -4,6 +4,7 @@ import { Text, TextInput, Button, Surface, useTheme } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { Phone, ArrowRight, ShieldCheck, Truck } from 'lucide-react-native';
+import { authAPI } from '../../src/services/api';
 
 
 export default function LoginScreen() {
@@ -17,20 +18,41 @@ export default function LoginScreen() {
     const { login } = useAuthStore();
 
     const handleSendOTP = async () => {
+        if (!phone || phone.length < 10) return;
         setIsLoading(true);
-        setTimeout(() => {
-            setStep(2);
+        try {
+            const response = await authAPI.sendOTP(phone, 'driver');
+            if (response.data.status === 'success') {
+                setStep(2);
+            } else {
+                alert(response.data.message || 'Failed to send OTP');
+            }
+        } catch (error: any) {
+            console.error('Send OTP Error:', error);
+            alert(error.response?.data?.message || 'Failed to connect to server');
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handleVerifyOTP = async () => {
+        if (!otp || otp.length < 4) return;
         setIsLoading(true);
-        setTimeout(async () => {
-            await login({ id: 'D1', name: 'Rajesh Kumar', phone, role: 'driver' }, 'mock-jwt-token');
-            router.replace('/(tabs)');
+        try {
+            const response = await authAPI.verifyOTP(phone, otp, 'driver');
+            if (response.data.status === 'success') {
+                const { user, accessToken } = response.data.data;
+                await login(user, accessToken);
+                router.replace('/(tabs)');
+            } else {
+                alert(response.data.message || 'Invalid OTP');
+            }
+        } catch (error: any) {
+            console.error('Verify OTP Error:', error);
+            alert(error.response?.data?.message || 'OTP verification failed');
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     return (

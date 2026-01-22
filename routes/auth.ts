@@ -13,7 +13,8 @@ const router: Router = Router();
 // @access  Public
 router.post('/send-otp', [
   body('phone').isMobilePhone('en-IN').withMessage('Valid Indian phone number required'),
-  body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters')
+  body('name').optional().isLength({ min: 2 }).withMessage('Name must be at least 2 characters'),
+  body('role').optional().isIn(['customer', 'driver']).withMessage('Invalid role')
 ] as ValidationChain[], async (req: Request, res: Response): Promise<Response> => {
   try {
     const errors = validationResult(req);
@@ -25,23 +26,24 @@ router.post('/send-otp', [
       });
     }
 
-    const { phone, name } = req.body;
+    const { phone, name, role } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ phone });
-    
+
     if (!user) {
       // Create new user if doesn't exist
       user = new User({
         phone,
-        name: name || 'User'
+        name: name || 'User',
+        role: role || 'customer'
       });
       await user.save();
     }
 
     // Send OTP
     const otpSent = await sendOTP(phone);
-    
+
     if (!otpSent) {
       return res.status(500).json({
         status: 'error',
@@ -84,7 +86,7 @@ router.post('/verify-otp', [
 
     // Verify OTP
     const isValidOTP = await verifyOTP(phone, otp);
-    
+
     if (!isValidOTP) {
       return res.status(400).json({
         status: 'error',
@@ -194,7 +196,7 @@ router.post('/google', [
 
     // Verify Google token (implement Google OAuth verification)
     const googleUser = await verifyGoogleToken(googleToken);
-    
+
     if (!googleUser) {
       return res.status(400).json({
         status: 'error',
@@ -203,7 +205,7 @@ router.post('/google', [
     }
 
     // Find or create user
-    let user = await User.findOne({ 
+    let user = await User.findOne({
       $or: [
         { googleId: googleUser.sub },
         { email: googleUser.email }
@@ -255,7 +257,7 @@ router.post('/logout', async (req: Request, res: Response): Promise<Response> =>
   try {
     // In a more sophisticated implementation, you might want to blacklist the token
     // For now, we'll just return success as the client will remove the token
-    
+
     return res.json({
       status: 'success',
       message: 'Logout successful'
