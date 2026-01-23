@@ -24,7 +24,12 @@ import bookingRoutes from './routes/bookings';
 import driverRoutes from './routes/drivers';
 import paymentRoutes from './routes/payments';
 import adminRoutes from './routes/admin';
-import driverApiRoutes from './routes/driver'; // New driver API routes
+import driverApiRoutes from './routes/driver';
+import walletRoutes from './routes/wallet';
+import promoRoutes from './routes/promo';
+import notificationRoutes from './routes/notifications';
+import './services/eventBus'; // Initialize event listeners
+import notificationService from './services/notificationService';
 
 // Import middleware
 import errorHandler from './middleware/errorHandler';
@@ -57,9 +62,11 @@ const server: HttpServer = createServer(app);
 const io: Server = new Server(server, {
   cors: {
     origin: env.FRONTEND_URL,
-    methods: ["GET", "POST"]
   }
 });
+
+// Initialize Notification Service with IO
+notificationService.setSocketIO(io);
 
 // Connect to database
 connectDB();
@@ -116,6 +123,9 @@ app.use('/api/drivers', authenticateToken, driverRoutes);
 app.use('/api/driver', driverApiRoutes); // New driver API routes (has its own auth)
 app.use('/api/payments', authenticateToken, paymentRoutes);
 app.use('/api/admin', authenticateToken, adminRoutes);
+app.use('/api/wallet', authenticateToken, walletRoutes);
+app.use('/api/promo', promoRoutes);
+app.use('/api/notifications', authenticateToken, notificationRoutes);
 
 // Socket.IO connection handling
 io.on('connection', (socket: CustomSocket) => {

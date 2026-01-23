@@ -26,4 +26,19 @@ export const driverAPI = {
     getTrips: () => api.get('/drivers/trips'),
 };
 
+export const walletAPI = {
+    getBalance: () => api.get('/wallet/balance'),
+    getTransactions: (page = 1) => api.get(`/wallet/transactions?page=${page}`),
+    withdraw: (data: { amount: number; bankDetails: any; upiId?: string }) =>
+        api.post('/wallet/withdraw', data),
+};
+
+export const notificationAPI = {
+    getNotifications: (page = 1, unreadOnly = false) =>
+        api.get(`/notifications?page=${page}&unreadOnly=${unreadOnly}`),
+    markAsRead: (id: string) => api.patch(`/notifications/${id}/read`),
+    markAllAsRead: () => api.patch('/notifications/read-all'),
+    getUnreadCount: () => api.get('/notifications/unread-count'),
+};
+
 export default api;

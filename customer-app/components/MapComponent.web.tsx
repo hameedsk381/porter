@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Map as MapIcon } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,10 +12,10 @@ interface MapComponentProps {
 
 export default function MapComponent({ location, theme, mapStyle }: MapComponentProps) {
     return (
-        <View style={[styles.map, { backgroundColor: '#f1f5f9', justifyContent: 'center', alignItems: 'center' }]}>
-            <MapIcon size={48} color={theme.colors.outline} />
-            <Text variant="bodyMedium" style={{ marginTop: 12, color: '#94a3b8' }}>
-                Interactive maps are optimized for mobile devices.
+        <View style={[styles.map, { backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }]}>
+            <Text style={{ color: '#6b7280', fontWeight: 'bold' }}>Map View (Web Preview)</Text>
+            <Text style={{ color: '#9ca3af', fontSize: 12 }}>
+                Lat: {location?.latitude?.toFixed(4) || '19.0760'}, Lng: {location?.longitude?.toFixed(4) || '72.8777'}
             </Text>
         </View>
     );
@@ -24,7 +23,7 @@ export default function MapComponent({ location, theme, mapStyle }: MapComponent
 
 const styles = StyleSheet.create({
     map: {
-        width: '100%',
+        width: width,
         height: height,
     },
 });
